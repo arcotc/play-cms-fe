@@ -18,6 +18,7 @@ package controllers
 import javax.inject._
 
 import models.LoadedPage
+import play.api.Logger
 import play.api.libs.ws.{WSClient, WSRequest, WSResponse}
 import play.api.mvc._
 
@@ -26,8 +27,17 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 @Singleton
 class HomeController @Inject() (ws: WSClient) extends Controller {
-  def index: Action[AnyContent] = Action.async {
-    val url = "http://localhost:9001/any/page"
+  val server = "http://localhost:9001"
+  val defaultUrl = s"$server/any/page"
+
+  def fetchPage(page: String = "")(f: => WSResponse => Result) = Action.async { response =>
+    val url = page.isEmpty match {
+      case true => defaultUrl
+      case false => s"$defaultUrl/$page"
+    }
+
+    Logger.debug(s"Calling ${url}")
+
     val request: WSRequest = ws.url(url)
     val complexRequest: WSRequest =
       request.withHeaders("Accept" -> "application/json")
@@ -35,11 +45,19 @@ class HomeController @Inject() (ws: WSClient) extends Controller {
     val futureResponse: Future[WSResponse] = complexRequest.get()
     futureResponse.map {
       case response if response.status == OK => {
-        val loadedPage = response.json.as[LoadedPage]
-        Ok(views.html.renderTemplate(loadedPage))
+        f(response)
       }
       case _ => Ok(views.html.index("This is an error"))
     }
   }
 
+  def index: Action[AnyContent] = fetchPage() { response =>
+    val loadedPage = response.json.as[LoadedPage]
+    Ok(views.html.renderTemplate(loadedPage))
+  }
+
+  def loadPage(page: String): Action[AnyContent] = fetchPage(page) { response =>
+    val loadedPage = response.json.as[LoadedPage]
+    Ok(views.html.renderTemplate(loadedPage))
+  }
 }

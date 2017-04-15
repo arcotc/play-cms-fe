@@ -4,6 +4,7 @@
 
 # An example controller showing a sample home page
 GET     /                           controllers.HomeController.index
+GET     /:page                      controllers.HomeController.loadPage(page: String)
 GET     /common/assets/:asset       controllers.CommonAssetsController.index(asset: String)
 
 # Map static resources from the /public folder to the /assets URL path
