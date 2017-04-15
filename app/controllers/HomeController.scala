@@ -17,12 +17,29 @@ package controllers
 
 import javax.inject._
 
+import models.LoadedPage
+import play.api.libs.ws.{WSClient, WSRequest, WSResponse}
 import play.api.mvc._
 
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
+
 @Singleton
-class HomeController @Inject() extends Controller {
-  def index: Action[AnyContent] = Action {
-    Ok(views.html.index("Play CMS Frontend"))
+class HomeController @Inject() (ws: WSClient) extends Controller {
+  def index: Action[AnyContent] = Action.async {
+    val url = "http://localhost:9001/any/page"
+    val request: WSRequest = ws.url(url)
+    val complexRequest: WSRequest =
+      request.withHeaders("Accept" -> "application/json")
+
+    val futureResponse: Future[WSResponse] = complexRequest.get()
+    futureResponse.map {
+      case response if response.status == OK => {
+        println(s"*********** ${response.json.as[LoadedPage]}")
+        Ok(views.html.index("Play CMS Frontend"))
+      }
+      case _ => Ok(views.html.index("This is an error"))
+    }
   }
 
 }
