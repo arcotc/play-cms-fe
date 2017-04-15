@@ -21,22 +21,21 @@ import models.LoadedPage
 import play.api.libs.ws.{WSClient, WSRequest, WSResponse}
 import play.api.mvc._
 
-import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 @Singleton
-class HomeController @Inject() (ws: WSClient) extends Controller {
-  def index: Action[AnyContent] = Action.async {
-    val url = "http://localhost:9001/any/page"
+class CommonAssetsController @Inject()(ws: WSClient) extends Controller {
+  def index(asset: String): Action[AnyContent] = Action.async {
+    val url = "http://localhost:9001/assets/asset"
     val request: WSRequest = ws.url(url)
     val complexRequest: WSRequest =
-      request.withHeaders("Accept" -> "application/json")
+      request.withHeaders("Accept" -> "application/text")
 
     val futureResponse: Future[WSResponse] = complexRequest.get()
     futureResponse.map {
       case response if response.status == OK => {
-        val loadedPage = response.json.as[LoadedPage]
-        Ok(views.html.renderTemplate(loadedPage))
+        Ok(response.body)
       }
       case _ => Ok(views.html.index("This is an error"))
     }

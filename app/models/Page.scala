@@ -16,9 +16,17 @@
 
 package models
 
-import play.api.libs.json.Json
+import java.net.URLDecoder
 
-case class Page(name: String, content: String)
+import play.api.libs.json.Json
+import play.twirl.api.Html
+
+case class Page(name: String, content: String) {
+  def renderedContent() = {
+    Html(URLDecoder.decode(content, "UTF-8"))
+  }
+
+}
 
 object Page {
   implicit val reads = Json.reads[Page]

@@ -1,0 +1,16 @@
+@import java.net.URLDecoder
+
+@(loadedPage: models.LoadedPage)
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>@loadedPage.group.name - @loadedPage.page.name</title>
+        @loadedPage.template.renderedHead()
+    </head>
+    <body>
+        @loadedPage.template.renderedHeader()
+        @loadedPage.page.renderedContent()
+        @loadedPage.template.renderedFooter()
+    </body>
+</html>

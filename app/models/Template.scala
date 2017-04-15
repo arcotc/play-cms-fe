@@ -16,9 +16,24 @@
 
 package models
 
-import play.api.libs.json.Json
+import java.net.URLDecoder
 
-case class Template(name: String)
+import play.api.libs.json.Json
+import play.twirl.api.Html
+
+case class Template(name: String, headOption: Option[String], headerOption: Option[String], footerOption: Option[String]) {
+  def renderedHead() = {
+    headOption.fold(Html("")) { head => Html(URLDecoder.decode(head, "UTF-8")) }
+  }
+
+  def renderedHeader() = {
+    headerOption.fold(Html("")) { header => Html(URLDecoder.decode(header, "UTF-8")) }
+  }
+
+  def renderedFooter() = {
+    footerOption.fold(Html("")) { footer => Html(URLDecoder.decode(footer, "UTF-8")) }
+  }
+}
 
 object Template {
   implicit val reads = Json.reads[Template]
